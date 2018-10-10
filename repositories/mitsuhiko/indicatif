@@ -1,6 +1,7 @@
-Repository: https://github.com/mitsuhiko/indicatif
-Description: A command line progress reporting library for Rust
-Latest commit at the time reading: 0c3c0b5
+Repository:    https://github.com/mitsuhiko/indicatif
+Description:   A command line progress reporting library for Rust
+Commit:        0c3c0b5
+Main Language: Rust
 
 The relationship between source files:
 .
@@ -12,24 +13,92 @@ The relationship between source files:
             └── utils.rs
 
 * lib.rs:
-This is the entry point of the library, defining all of the dependencies and exposing the library's interface to the public.
+This is the entry point of the library, defining all of the dependencies and
+exposing the library's interface to the public.
 
 * utils.rs:
 A collection of utility functions and data structures:
 
-- fn duration_to_secs() / fn secs_to_duration(): Convert a second as an f64 number to std::time::Duration and vice versa.
-- struct Estimate: A data struct holding information and operations for progress bar estimation.
+- fn duration_to_secs() / fn secs_to_duration(): Convert a second as an f64
+  number to std::time::Duration and vice versa.
+- struct Estimate: A data struct holding information and operations for the
+  progress bar estimation.
 - enum Alignment: Text alignment enum, for being used in the template string.
-- struct TemplateVar: A data struct that the template strings will be parsed to, holding information about the template.
-- fn expand_template(): A function helps converting template strings into an ANSI escape sequences.
+- struct TemplateVar: A data struct that the template strings will be parsed
+  to, holding information about the template.
+- fn expand_template(): A function helps converting template strings into an
+  ANSI escape sequences.
 - fn pad_str(): String padding to the direction of the Alignment.
 
-Reading the test cases at the end of this file will help you make sense about what these functions/data structures are for.
+Reading the test cases at the end of this file will help you make sense about
+what these functions/data structures are for.
 
 * format.rs:
-Implements fmt::Display trait for std::time::Duration and u64 bytes into various human readable formats.
+Implements fmt::Display trait for std::time::Duration and u64 bytes into
+various human-readable formats.
 
-The formats this module provided are: FormattedDuration, HumanDuration, HumanBytes, DecimalBytes and BinaryBytes.
+The formats are: FormattedDuration, HumanDuration, HumanBytes, DecimalBytes
+and BinaryBytes.
 
 * progress.rs:
 The main module handling the progress reporting on the command line.
+
+- struct ProgressStyle: A structure to controls the rendering styles of a
+  progress bar, transforming a ProgressState into a vector of strings.
+- struct ProgressDrawState: A structure carrying information about the render
+  process, control the terminal interaction (clear_term(), move_cursor(),...)
+- enum Status: Define statuses of a ProgressState
+- enum ProgressDrawTargetKind: Define the destination of rendering (Terminal,
+  Remote or Hidden)
+- struct ProgressDrawTarget: A stateful wrapper of the rendering destination.
+- struct ProgressState: A structure carrying information (state) of a progress
+  bar at a moment in time. Containing all of the information like: the style,
+  the size, the position, the rendering status, progress estimation,...
+- struct ProgressBar: The main representation of a progress bar, this is what
+  the library users will work on most of the time. It contains the constructor
+  and all of the method needed to manipulate the progress bar.
+- struct ProgressBarItem: An iterable wrapper of a ProgressBar instance.
+- fn draw_state(): Draw a progress bar
+
+If the rendering target is set to Terminal, the rendering approach is pretty
+simple: Jump and print, or clear the line.
+
+    if let Some(ref last_state) = *last_state {
+        if !draw_state.lines.is_empty() && draw_state.move_cursor {
+            last_state.move_cursor(term)?;
+        } else {
+            last_state.clear_term(term)?;
+        }
+    }
+    draw_state.draw_to_term(term)?;
+    term.flush()?;
+    *last_state = Some(draw_state);
+
+The progress bar will be updated by its tick() method, library user can also
+call inc() or set_position() to update.
+
+Progress bar can be automatically tick by using enable_steady_tick(millis),
+which will spawn a new thread and tick the progress bar in the given interval.
+
+Also, there are some structures to support controlling multiple progress bar
+within the same instance (MultiProgress):
+
+- struct MultiObject
+- struct MultiProgressState
+- struct MultiProgress
+
+Each ProgressBar added into MultiProgress will work like an individual thread
+and we can use join() method to wait for all progress bars to finished.
+
+------
+
+With this kind of project, the common issue would be: could not render or the
+progress bar render not correctly on some kind of terminal emulators. In this
+case, we should look at the expand_template() for the ANSI escape sequences.
+
+For rendering performance issue, we should be looking at the ticking threads
+or the way characters being printed out to terminal. Also, there is a throttle
+method set_draw_delta() which will limit the redrawing rate.
+
+There's a bunch of string formatting statements that should be optimized to
+remove the potential bottleneck that might affects the performance.
