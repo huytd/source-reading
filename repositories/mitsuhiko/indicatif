@@ -2,17 +2,14 @@ Repository: https://github.com/mitsuhiko/indicatif
 Description: A command line progress reporting library for Rust
 Latest commit at the time reading: 0c3c0b5
 
-Folder structure:
+The relationship between source files:
 .
 ├── Cargo.toml
-├── examples
-│   ├── ...
 └── src
-    ├── format.rs
-    ├── lib.rs
-    ├── progress.rs
-    └── utils.rs
-
+    └── lib.rs
+        └── progress.rs
+            ├── format.rs
+            └── utils.rs
 
 * lib.rs:
 This is the entry point of the library, defining all of the dependencies and exposing the library's interface to the public.
@@ -21,10 +18,18 @@ This is the entry point of the library, defining all of the dependencies and exp
 A collection of utility functions and data structures:
 
 - fn duration_to_secs() / fn secs_to_duration(): Convert a second as an f64 number to std::time::Duration and vice versa.
-- struct Estimate: 
-- enum Alignment:
-- struct TemplateVar:
-- fn expand_template():
-- fn pad_str():
+- struct Estimate: A data struct holding information and operations for progress bar estimation.
+- enum Alignment: Text alignment enum, for being used in the template string.
+- struct TemplateVar: A data struct that the template strings will be parsed to, holding information about the template.
+- fn expand_template(): A function helps converting template strings into an ANSI escape sequences.
+- fn pad_str(): String padding to the direction of the Alignment.
 
 Reading the test cases at the end of this file will help you make sense about what these functions/data structures are for.
+
+* format.rs:
+Implements fmt::Display trait for std::time::Duration and u64 bytes into various human readable formats.
+
+The formats this module provided are: FormattedDuration, HumanDuration, HumanBytes, DecimalBytes and BinaryBytes.
+
+* progress.rs:
+The main module handling the progress reporting on the command line.
