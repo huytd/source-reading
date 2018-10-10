@@ -1,0 +1,30 @@
+Repository: https://github.com/mitsuhiko/indicatif
+Description: A command line progress reporting library for Rust
+Latest commit at the time reading: 0c3c0b5
+
+Folder structure:
+.
+├── Cargo.toml
+├── examples
+│   ├── ...
+└── src
+    ├── format.rs
+    ├── lib.rs
+    ├── progress.rs
+    └── utils.rs
+
+
+* lib.rs:
+This is the entry point of the library, defining all of the dependencies and exposing the library's interface to the public.
+
+* utils.rs:
+A collection of utility functions and data structures:
+
+- fn duration_to_secs() / fn secs_to_duration(): Convert a second as an f64 number to std::time::Duration and vice versa.
+- struct Estimate: 
+- enum Alignment:
+- struct TemplateVar:
+- fn expand_template():
+- fn pad_str():
+
+Reading the test cases at the end of this file will help you make sense about what these functions/data structures are for.
